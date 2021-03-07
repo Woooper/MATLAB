@@ -1,0 +1,205 @@
+%% Murat Teksin 040160024
+% There are some problems that i couldn't fix.
+% One of them is When you start the process sometimes the total number doesn't match.
+% EX: 10 Infected 89 Healty So please take a breakpoint at pause function
+% then start. If numbers like 10 Inf 90 Healt or 11 inf 89 healty then
+% clear the break point and continue the process. The Prob is set from the
+% decision part that i explain in that line.
+% Another problem in 0.5 prob the infected number can exceed. So try again
+% in that case please.
+%Because of this problems some part of code must be set with hand.
+% Thank you.
+%%
+clc;
+close all;
+people=100;                 
+healty_to_infect=[];
+norm=[];
+d=[];
+yyi=1;
+counter=0;
+infected_people = 10;
+healty_people=people-infected_people;
+area_widness = 100;
+yu=[];
+number=0;
+% Healty and infected people are distiributed in the area.
+
+infected_people_position = randi([0,area_widness],infected_people,2);
+healty_people_position = randi([0,area_widness],healty_people,2);
+stepsize = 1;
+figure;
+
+% Plotting the initial state.
+
+plot(infected_people_position(1:10),infected_people_position(11:20),"ro")
+hold on;
+title("Initial Stuation : REDs ( "+length(infected_people_position)+" ) are infected,BLUEs ( " + length(healty_people_position) +  " ) are healty");
+plot(healty_people_position(1:90),healty_people_position(91:180),"bo")
+grid on;
+
+% For sorting as regards the first column of healty people. This process is done.
+
+healty_people_position(end+1,1)=101;
+healty_people_position=setdiff(healty_people_position,[101,0],'rows');
+
+% The moving of people and spreading of virus part.
+
+for ii = 1:25
+    norm=[];
+    % generate difference
+    %for 50 immobilizing people use below. Clear the comments.
+% %     immob=randi([0,length(infected_people_position)],1);
+% %     h_immob=50-immob;
+% %     if h_immob < 0 
+% %         immob=50;
+% %         h_immob=0;    
+% %     end
+% %     if h_immob>length(healty_people_position)
+% %         immob=immob+(h_immob-length(healty_people_position));
+% %         h_immob = length(healty_people_position);
+% %     end
+% %     immobi = randperm(length(infected_people_position),immob);
+% %     h_immobi = randperm(length(healty_people_position),h_immob);
+% %     for oyu=1:immob
+% %         stay_infect(oyu,1)=infected_people_position(immobi(oyu),1);
+% %         stay_infect(oyu,2)=infected_people_position(immobi(oyu),2);
+% %     end
+% %     for oyuh=1:h_immob
+% %         stay_healty(oyuh,1)=healty_people_position(h_immobi(oyuh),1);
+% %         stay_healty(oyuh,2)=healty_people_position(h_immobi(oyuh),2);
+% %     end
+    %This provide us to record the first positions. 
+    
+    %For infect immobilize comment the next line and 4,7,8 next line.
+    infected_position_changes = stepsize*(2*randi([0,1],length(infected_people_position),2)-1);
+    healty_position_changes = stepsize*(2*randi([0,1],length(healty_people_position),2)-1);
+    % update
+    infected_people_position = infected_people_position + infected_position_changes;
+    healty_people_position = healty_people_position + healty_position_changes;
+    %apply the boundry conditions
+    infected_people_position(infected_people_position > area_widness) = area_widness-2*stepsize;
+    infected_people_position(infected_people_position <= 0) =   2*stepsize;
+    healty_people_position(healty_people_position > area_widness) = area_widness-2*stepsize;
+    healty_people_position(healty_people_position <= 0) =   2*stepsize;
+    % First the distance between patient and healty person is found.
+    % We apply the recorded data to new data. This part also must clear
+    % from comment. 
+% %     for oyu=1:immob
+% %         infected_people_position(immobi(oyu),1)=stay_infect(oyu,1);
+% %         infected_people_position(immobi(oyu),2)=stay_infect(oyu,2);
+% %     end
+% %     for oyuh=1:h_immob
+% %         healty_people_position(h_immobi(oyuh),1)=stay_healty(oyuh,1);
+% %         healty_people_position(h_immobi(oyuh),2)=stay_healty(oyuh,2);
+% %     end
+% %    h_immobi=[];
+% %    immoni=[];
+% %    stay_infect=[];
+% %    stah_healty=[];
+    for ti = 1:1:length(infected_people_position)
+        for tii=1:1:length(healty_people_position)
+            norm(end+1) = sqrt(((infected_people_position(ti,1)-healty_people_position(tii,1)).^2)+((healty_people_position(tii,2)-infected_people_position(ti,2)).^2));
+        end
+    end
+    
+    % After that we count the poeple that exceed the social distance.
+    
+    for ni = 1:1:length(norm)
+        
+        if norm(ni)<=5
+            % for finding which healty people enter the risky area we take mod in the number of healty people.
+            % if the last person enter the risky area then mod(n,n)=0
+            % 0 is not recognize in arrays in matlab so we change it to
+            % last digit.
+            yu(end+1,1)=mod(ni,length(healty_people_position));
+           
+            for yui=(1:length(yu)-1)
+                if yu(yui)==0 
+                    yu(yui)=length(healty_people_position);
+                    
+                end
+                if yu(end)==0
+                    yu(end)=length(healty_people_position);
+                end
+                                   
+                if yu(end)==yu(yui)
+                    if mod(ni,length(healty_people_position))==0
+                        healty_to_infect(end-(length(yu)-yui-1),1)=healty_people_position(length(healty_people_position),1);
+                        healty_to_infect(end-(length(yu)-yui-1),2)=healty_people_position(length(healty_people_position),2);
+                    else                        
+                        healty_to_infect(end-(length(yu)-yui-1),1)=healty_people_position(mod(ni,length(healty_people_position)),1);
+                        healty_to_infect(end-(length(yu)-yui-1),2)=healty_people_position(mod(ni,length(healty_people_position)),2);
+                    end
+                end
+            end
+            if mod(ni,length(healty_people_position)) == 0
+                
+                % Create the risky people list.
+                healty_to_infect(end+1,1)=healty_people_position(length(healty_people_position),1);
+                healty_to_infect(end,2)=healty_people_position(length(healty_people_position),2);               
+            else
+                healty_to_infect(end+1,1)=healty_people_position(mod(ni,length(healty_people_position)),1);
+
+                healty_to_infect(end,2)=healty_people_position(mod(ni,length(healty_people_position)),2);                
+                    
+            end
+            T=table(healty_to_infect);         
+            number=height(T);
+            % probability is %5
+            if  number == 20 %change for %10 10 , %20 5 , %50 2 !!!! Prob part
+                k=length(healty_people_position);
+                % Choose random person in risky area.
+                decisioner=randi(20,1); % Change the row part also for %10 10 , %20 5 , %50 2 !!!!
+                % Add infected people list that person.
+                infected_people_position(end+1,1)=healty_to_infect(decisioner,1);
+                infected_people_position(end,2)=healty_to_infect(decisioner,2);
+                % Delete that person from the healty people list.
+                d(1,1)=healty_to_infect(decisioner,1);
+                d(1,2)=healty_to_infect(decisioner,2);
+                healty_people_position(yu(decisioner),:)=[];
+                %healty_people_position=setdiff(healty_people_position,d,'rows');
+                % Sometimes there is more than one person in same area so
+                % we lose 2 healty people with this this problem is solved.
+%                 if k-length(healty_people_position)==2
+%                     healty_people_position(end+1,1)=d(1,1);
+%                     healty_people_position(end,2)=d(1,2);
+%                 end
+                % Turning back for the next loop.                
+                healty_to_infect=[];
+                d=[];
+                number=0;
+                yu=[];
+            end
+            
+        end
+            
+    
+    end
+    
+    %This is used for taking the infected people number in every iteration.
+    %Change the coloum part as 1,2,3,4 for different probabilities.
+    stat(ii,1)=length(infected_people_position);
+
+ 
+    % Plotting part
+    clf;
+    plot(healty_people_position(1:length(healty_people_position)),healty_people_position(length(healty_people_position)+1:length(healty_people_position)*2),"bo")
+    hold on;
+    plot(infected_people_position(1:length(infected_people_position)),infected_people_position(length(infected_people_position)+1:length(infected_people_position)*2),"ro")
+    title("REDs ( "+length(infected_people_position)+" ) are infected,BLUEs ( " + length(healty_people_position) +  " ) are healty");
+    grid on;
+    
+    % For watch the change properly every loop waits 0.33 second.
+    pause(0.33);
+    
+    % AFTER the processes apply the below step by step for the watch results.
+%     % figure
+%     % plot(1:25,stat(:,1))
+%     % hold on
+%     % plot(1:25,stat(:,2))
+%     % plot(1:25,stat(:,3))
+%     % plot(1:25,stat(:,4))
+%     % title(" Infected People Number in every Iteration ")
+%     % legend("P = 0,05","P = 0,1","P = 0,2","P = 0,5")
+end
